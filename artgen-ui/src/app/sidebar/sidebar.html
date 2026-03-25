@@ -91,6 +91,7 @@
         class="out-chip"
         [class.active]="state.state().outputFormats.includes('html')"
         (click)="toggleFormat('html')">
+        <span class="out-chip-check">✓</span>
         <span class="out-chip-icon">🌐</span>
         HTML
       </button>
@@ -98,6 +99,7 @@
         class="out-chip"
         [class.active]="state.state().outputFormats.includes('pdf')"
         (click)="toggleFormat('pdf')">
+        <span class="out-chip-check">✓</span>
         <span class="out-chip-icon">📕</span>
         PDF
       </button>

@@ -33,7 +33,10 @@ export class ConversionApiService {
       );
 
       if (result?.success) {
-        result.outputs.forEach(o => this.triggerDownload(o.downloadToken, o.filename));
+        const mdBase = s.markdownFileName.replace(/\.md$/i, '') || 'document';
+        result.outputs.forEach((o, i) =>
+          setTimeout(() => this.triggerDownload(o.downloadToken, o.filename, mdBase), i * 500)
+        );
         this.stateService.setStatus('success');
       } else {
         throw new Error('Conversion returned unsuccessful');
@@ -43,13 +46,19 @@ export class ConversionApiService {
     }
   }
 
-  private triggerDownload(token: string, filename: string): void {
+  private async triggerDownload(token: string, filename: string, mdBase: string): Promise<void> {
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const ext = filename.slice(filename.lastIndexOf('.'));
+    const stamped = `${mdBase}_${ts}${ext}`;
+    const blob = await fetch(`${environment.apiUrl}/api/convert/download/${token}`).then(r => r.blob());
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = `${environment.apiUrl}/api/convert/download/${token}`;
-    a.download = filename;
+    a.href = url;
+    a.download = stamped;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 }

@@ -230,11 +230,11 @@
 
 .out-chip {
   flex: 1;
-  border: 0.5px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius);
-  padding: 6px 4px;
+  padding: 8px 4px 6px;
   text-align: center;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
   background: var(--bg);
   color: var(--muted);
@@ -243,21 +243,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 3px;
+  position: relative;
 
   &.active {
     border-color: var(--accent-blue);
-    background: color-mix(in srgb, var(--accent-blue) 10%, transparent);
-    color: var(--accent-blue);
-    font-weight: 500;
+    background: var(--accent-blue);
+    color: #fff;
+    font-weight: 600;
+
+    .out-chip-check { opacity: 1; }
   }
 
-  &:hover:not(.active) { border-color: var(--muted); }
+  &:hover:not(.active) {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+  }
 }
 
 .out-chip-icon {
-  font-size: 14px;
+  font-size: 16px;
   display: block;
-  margin-bottom: 2px;
+}
+
+.out-chip-check {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-size: 9px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  line-height: 1;
 }
 
 /* Status messages */

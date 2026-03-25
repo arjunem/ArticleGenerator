@@ -8,7 +8,7 @@ namespace ArtGen.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class ConvertController(
-    DirectConversionService directService,
+    IConversionService directService,
     IMemoryCache cache,
     ILogger<ConvertController> logger) : ControllerBase
 {
