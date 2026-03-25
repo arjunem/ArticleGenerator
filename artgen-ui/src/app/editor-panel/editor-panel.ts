@@ -1,5 +1,5 @@
 import {
-  Component, inject, AfterViewInit,
+  Component, inject, AfterViewInit, OnDestroy,
   ElementRef, ViewChild, effect, signal
 } from '@angular/core';
 import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common';
@@ -28,7 +28,7 @@ marked.use(markedHighlight({
   templateUrl: './editor-panel.html',
   styleUrl: './editor-panel.scss'
 })
-export class EditorPanel implements AfterViewInit {
+export class EditorPanel implements AfterViewInit, OnDestroy {
   @ViewChild('editorHost') editorHost!: ElementRef<HTMLElement>;
   @ViewChild('previewHost') previewHost!: ElementRef<HTMLElement>;
   @ViewChild('editorBody') editorBody!: ElementRef<HTMLElement>;
@@ -39,6 +39,11 @@ export class EditorPanel implements AfterViewInit {
 
   readonly splitRatio = signal(0.5);
   isDragging = false;
+
+  // Scroll-sync state
+  private isSyncing = false;
+  private editorScrollListener?: () => void;
+  private previewScrollListener?: () => void;
 
   constructor() {
     effect(() => {
@@ -118,6 +123,46 @@ export class EditorPanel implements AfterViewInit {
       }),
       parent: this.editorHost.nativeElement
     });
+
+    this.setupScrollSync();
+  }
+
+  /** Sync editor scroll → preview, and preview scroll → editor. */
+  private setupScrollSync(): void {
+    const editorScroller = this.view!.scrollDOM;
+    const preview = this.previewHost.nativeElement;
+
+    // Editor scrolled → update preview
+    this.editorScrollListener = () => {
+      if (this.isSyncing) return;
+      this.isSyncing = true;
+      const ratio = editorScroller.scrollTop /
+        (editorScroller.scrollHeight - editorScroller.clientHeight || 1);
+      preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
+      requestAnimationFrame(() => { this.isSyncing = false; });
+    };
+
+    // Preview scrolled → update editor
+    this.previewScrollListener = () => {
+      if (this.isSyncing) return;
+      this.isSyncing = true;
+      const ratio = preview.scrollTop /
+        (preview.scrollHeight - preview.clientHeight || 1);
+      editorScroller.scrollTop = ratio * (editorScroller.scrollHeight - editorScroller.clientHeight);
+      requestAnimationFrame(() => { this.isSyncing = false; });
+    };
+
+    editorScroller.addEventListener('scroll', this.editorScrollListener, { passive: true });
+    preview.addEventListener('scroll', this.previewScrollListener, { passive: true });
+  }
+
+  ngOnDestroy(): void {
+    if (this.view && this.editorScrollListener) {
+      this.view.scrollDOM.removeEventListener('scroll', this.editorScrollListener);
+    }
+    if (this.previewScrollListener) {
+      this.previewHost?.nativeElement.removeEventListener('scroll', this.previewScrollListener);
+    }
   }
 
   setViewMode(mode: ViewMode): void { this.stateService.setViewMode(mode); }
