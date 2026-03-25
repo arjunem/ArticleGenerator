@@ -1,0 +1,125 @@
+<div class="sidebar">
+
+  <!-- Markdown upload -->
+  <div class="section">
+    <div class="sec-label">Markdown file</div>
+    @if (state.state().markdownFileName) {
+      <div class="file-pill">
+        <span class="file-icon">📝</span>
+        <div class="file-info">
+          <div class="file-name">{{ state.state().markdownFileName }}</div>
+          <div class="file-meta">loaded</div>
+        </div>
+        <button class="x-btn" (click)="removeMd()">✕</button>
+      </div>
+    } @else {
+      <label
+        class="upload-zone"
+        (drop)="onDrop($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text"><strong>Drop .md file</strong><br>or click to browse</div>
+        <input type="file" accept=".md" (change)="onMdFileChange($event)" hidden />
+      </label>
+    }
+  </div>
+
+  <hr class="divider">
+
+  <!-- Template upload -->
+  <div class="section">
+    <div class="sec-label-row">
+      <span class="sec-label">Template</span>
+      <span class="optional-tag">optional</span>
+    </div>
+    @if (state.state().templateFile) {
+      <div class="file-pill">
+        <span class="file-icon">📎</span>
+        <div class="file-info">
+          <div class="file-name">{{ state.state().templateFile!.name }}</div>
+          <div class="file-meta">loaded</div>
+        </div>
+        <button class="x-btn" (click)="removeTemplate()">✕</button>
+      </div>
+    } @else {
+      <label class="tpl-zone">
+        <div class="tpl-text">Upload a CSS or HTML<br>template file</div>
+        <input type="file" accept=".html,.md,.pdf" (change)="onTemplateFileChange($event)" hidden />
+      </label>
+    }
+  </div>
+
+  <hr class="divider">
+
+  <!-- Conversion engine -->
+  <div class="section">
+    <div class="sec-label">Conversion engine</div>
+    <div class="engine-box">
+      <div class="engine-row">
+        <span class="engine-label">Claude LLM</span>
+        <div class="toggle-wrap">
+          <div
+            class="toggle"
+            [class.on]="state.state().engine === 'llm'"
+            (click)="toggleEngine()">
+            <div class="toggle-knob"></div>
+          </div>
+          <span class="engine-val" [class.off]="state.state().engine !== 'llm'">
+            {{ state.state().engine === 'llm' ? 'On' : 'Off' }}
+          </span>
+        </div>
+      </div>
+      <div class="sub-row">
+        <span class="sub-label">Fallback: Direct</span>
+        @if (state.state().engine === 'llm') {
+          <select class="select-mini" [value]="state.state().llmModel" (change)="onModelChange($event)">
+            @for (m of llmModels; track m.value) {
+              <option [value]="m.value">{{ m.label }}</option>
+            }
+          </select>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Output format -->
+  <div class="section">
+    <div class="sec-label">Output format</div>
+    <div class="output-row">
+      <button
+        class="out-chip"
+        [class.active]="state.state().outputFormats.includes('html')"
+        (click)="toggleFormat('html')">
+        <span class="out-chip-icon">🌐</span>
+        HTML
+      </button>
+      <button
+        class="out-chip"
+        [class.active]="state.state().outputFormats.includes('pdf')"
+        (click)="toggleFormat('pdf')">
+        <span class="out-chip-icon">📕</span>
+        PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  @if (state.state().status === 'error') {
+    <div class="error-msg">{{ state.state().errorMessage }}</div>
+  }
+  @if (state.state().status === 'success') {
+    <div class="success-msg">Done — files downloaded.</div>
+  }
+
+  <!-- Convert button -->
+  <button
+    class="convert-btn"
+    [class.converting]="state.state().status === 'converting'"
+    [disabled]="!state.canConvert()"
+    (click)="convert()">
+    <svg viewBox="0 0 16 16" fill="white" width="13" height="13"><path d="M3 8l4-4v3h6v2H7v3L3 8z"/></svg>
+    {{ state.state().status === 'converting' ? 'Converting…' : 'Convert' }}
+  </button>
+
+</div>

@@ -1,0 +1,238 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary);padding:12px}
+.app{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;min-height:620px;display:flex;flex-direction:column}
+.topbar{background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo{width:22px;height:22px;background:#e8673a;border-radius:5px;display:flex;align-items:center;justify-content:center}
+.logo svg{width:13px;height:13px;fill:white}
+.app-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+.badge-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.badge-green{background:var(--color-background-success);color:var(--color-text-success)}
+.mode-toggle{display:flex;align-items:center;gap:6px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--color-text-secondary)}
+.dot{width:7px;height:7px;border-radius:50%;background:#10b981}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;min-width:220px;border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;padding:12px;gap:10px}
+.sec-label{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px}
+.upload-zone{border:1px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:12px 8px;text-align:center;background:var(--color-background-secondary)}
+.upload-icon{font-size:16px;margin-bottom:4px}
+.upload-text{font-size:11px;color:var(--color-text-secondary);line-height:1.4}
+.upload-text strong{color:var(--color-text-primary);font-weight:500}
+.file-pill{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:7px 10px;display:flex;align-items:center;gap:7px}
+.file-icon{font-size:14px}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:11px;font-weight:500;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:10px;color:var(--color-text-tertiary)}
+.x-btn{font-size:12px;color:var(--color-text-tertiary);cursor:pointer}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:2px 0}
+.tpl-zone{border:1px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center}
+.tpl-text{font-size:10px;color:var(--color-text-tertiary);line-height:1.5}
+.optional-tag{font-size:9px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:1px 6px;color:var(--color-text-tertiary)}
+.engine-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;border:0.5px solid var(--color-border-tertiary)}
+.engine-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.engine-label{font-size:11px;color:var(--color-text-secondary)}
+.toggle-wrap{display:flex;align-items:center;gap:5px}
+.toggle{width:30px;height:16px;background:#10b981;border-radius:8px;position:relative;cursor:pointer}
+.toggle-knob{position:absolute;right:2px;top:2px;width:12px;height:12px;background:white;border-radius:50%}
+.toggle-off{background:var(--color-border-secondary)}
+.toggle-off .toggle-knob{right:auto;left:2px}
+.engine-val{font-size:10px;font-weight:500;color:var(--color-text-success)}
+.engine-val-off{color:var(--color-text-tertiary)}
+.sub-row{display:flex;align-items:center;justify-content:space-between}
+.sub-label{font-size:10px;color:var(--color-text-tertiary)}
+.select-mini{font-size:10px;color:var(--color-text-primary);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:4px;padding:2px 6px}
+.output-row{display:flex;gap:6px;margin-top:2px}
+.out-chip{flex:1;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:6px 4px;text-align:center;font-size:10px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);transition:all 0.15s}
+.out-chip.active{border-color:#2e6fd9;background:var(--color-background-info);color:var(--color-text-info);font-weight:500}
+.out-chip-icon{font-size:14px;display:block;margin-bottom:2px}
+.convert-btn{background:#e8673a;color:white;border:none;border-radius:var(--border-radius-md);padding:9px;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:auto}
+.convert-btn svg{width:13px;height:13px;fill:white}
+.editor-area{flex:1;display:flex;flex-direction:column;min-width:0}
+.editor-topbar{border-bottom:0.5px solid var(--color-border-tertiary);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;background:var(--color-background-secondary)}
+.editor-tabs{display:flex;gap:1px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+.editor-tab{font-size:11px;padding:4px 12px;cursor:pointer;color:var(--color-text-secondary);background:transparent}
+.editor-tab.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500}
+.editor-actions{display:flex;align-items:center;gap:8px}
+.edit-switch{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-text-secondary)}
+.switch-track{width:28px;height:15px;background:#2e6fd9;border-radius:8px;position:relative}
+.switch-knob{position:absolute;right:2px;top:1.5px;width:11px;height:11px;background:white;border-radius:50%}
+.char-count{font-size:10px;color:var(--color-text-tertiary)}
+.editor-body{flex:1;display:flex;overflow:hidden}
+.editor-pane{flex:1;padding:16px;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--color-text-primary)}
+.editor-pane.code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);color:var(--color-text-primary)}
+.preview-pane{flex:1;padding:16px;border-left:0.5px solid var(--color-border-tertiary);overflow-y:auto}
+.p-h1{font-size:17px;font-weight:500;margin-bottom:6px;color:var(--color-text-primary)}
+.p-h2{font-size:13px;font-weight:500;margin:10px 0 4px;padding-left:8px;border-left:2.5px solid #e8673a;color:var(--color-text-primary)}
+.p-p{font-size:11px;line-height:1.7;color:var(--color-text-secondary);margin-bottom:6px}
+.p-code{background:var(--color-background-secondary);border-radius:4px;padding:6px 10px;font-family:var(--font-mono);font-size:10px;color:var(--color-text-primary);margin-bottom:6px}
+.p-bq{border-left:2px solid var(--color-border-info);padding:6px 10px;background:var(--color-background-info);border-radius:0 4px 4px 0;font-size:10px;color:var(--color-text-secondary);margin-bottom:6px;font-style:italic}
+.status-bar{border-top:0.5px solid var(--color-border-tertiary);padding:5px 14px;background:var(--color-background-secondary);display:flex;align-items:center;justify-content:space-between}
+.status-left{display:flex;align-items:center;gap:10px}
+.status-item{font-size:10px;color:var(--color-text-tertiary);display:flex;align-items:center;gap:3px}
+.status-dot{width:5px;height:5px;border-radius:50%;background:#10b981}
+.progress-wrap{display:flex;align-items:center;gap:6px}
+.progress-bar{width:80px;height:3px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;width:65%;background:#e8673a;border-radius:2px}
+.progress-label{font-size:10px;color:var(--color-text-tertiary)}
+</style>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <svg viewBox="0 0 16 16"><path d="M2 2h5v2H4v8h2v2H2V2zm7 0h5v12h-4v-2h2V4h-3V2z"/></svg>
+      </div>
+      <span class="app-title">MarkFlow</span>
+      <span class="badge badge-blue">Angular 17</span>
+      <span class="badge badge-green">.NET 8 API</span>
+    </div>
+    <div class="topbar-right">
+      <div class="mode-toggle">
+        <span class="dot"></span>
+        <span>API running</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="sidebar">
+
+      <div>
+        <div class="sec-label">Markdown file</div>
+        <div class="upload-zone">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text"><strong>Drop .md file</strong><br>or click to browse</div>
+        </div>
+      </div>
+
+      <div class="file-pill">
+        <span class="file-icon">📝</span>
+        <div class="file-info">
+          <div class="file-name">what_git_really_is.md</div>
+          <div class="file-meta">18 KB · loaded</div>
+        </div>
+        <span class="x-btn">✕</span>
+      </div>
+
+      <hr class="divider">
+
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span class="sec-label">Template</span>
+          <span class="optional-tag">optional</span>
+        </div>
+        <div class="tpl-zone">
+          <div class="tpl-text">Upload a CSS or HTML<br>template file</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div>
+        <div class="sec-label" style="margin-bottom:6px">Conversion engine</div>
+        <div class="engine-box">
+          <div class="engine-row">
+            <span class="engine-label">Claude LLM</span>
+            <div class="toggle-wrap">
+              <div class="toggle"><div class="toggle-knob"></div></div>
+              <span class="engine-val">On</span>
+            </div>
+          </div>
+          <div class="sub-row">
+            <span class="sub-label">Fallback: Pandoc</span>
+            <span class="select-mini">claude-sonnet-4 ▾</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label" style="margin-bottom:6px">Output format</div>
+        <div class="output-row">
+          <div class="out-chip active">
+            <span class="out-chip-icon">🌐</span>
+            HTML
+          </div>
+          <div class="out-chip active">
+            <span class="out-chip-icon">📕</span>
+            PDF
+          </div>
+        </div>
+      </div>
+
+      <button class="convert-btn">
+        <svg viewBox="0 0 16 16"><path d="M3 8l4-4v3h6v2H7v3L3 8z"/></svg>
+        Convert
+      </button>
+
+    </div>
+
+    <div class="editor-area">
+
+      <div class="editor-topbar">
+        <div class="editor-tabs">
+          <div class="editor-tab active">Editor</div>
+          <div class="editor-tab">Preview</div>
+          <div class="editor-tab">Split</div>
+        </div>
+        <div class="editor-actions">
+          <div class="edit-switch">
+            <span>Edit mode</span>
+            <div class="switch-track"><div class="switch-knob"></div></div>
+          </div>
+          <span class="char-count">4,218 chars</span>
+        </div>
+      </div>
+
+      <div class="editor-body">
+
+        <div class="editor-pane code">
+<span style="color:#89b4fa"># What Git Really Is</span>
+<span style="color:#a6e3a1">### Spoiler: it's a persistent map.</span>
+&nbsp;
+<span style="color:#cba6f7">&gt; **TL;DR:** Git is a content-addressed</span>
+<span style="color:#cba6f7">&gt; key-value store at its core.</span>
+&nbsp;
+<span style="color:#89dceb">## Git is an onion 🧅</span>
+&nbsp;
+<span style="color:#f5c2e7">Think of Git as layers of an onion...</span>
+&nbsp;
+<span style="color:#89dceb">## The Core: A Persistent Map</span>
+&nbsp;
+<span style="color:#a6e3a1">```bash</span>
+<span style="color:#f9e2af">echo "Apple Pie" | git hash-object</span>
+<span style="color:#a6e3a1">```</span>
+        </div>
+
+        <div class="preview-pane">
+          <div class="p-h1">What Git Really Is 🧅</div>
+          <div class="p-bq">TL;DR: Git is a content-addressed key-value store at its core. By the end, you'll understand why Git works the way it does.</div>
+          <div class="p-h2">Git is an onion</div>
+          <div class="p-p">Think of Git as layers of an onion. Peel one back and there's something deeper underneath...</div>
+          <div class="p-h2">The Core: A Persistent Map</div>
+          <div class="p-p">At its heart, Git is a database that maps any sequence of bytes to a SHA1 hash key.</div>
+          <div class="p-code">echo "Apple Pie" | git hash-object --stdin<br># adc0c94a3c2b17062fd455a5...</div>
+          <div class="p-p">A few things worth knowing about this: the same content always produces the same hash — anywhere in the world.</div>
+        </div>
+
+      </div>
+
+      <div class="status-bar">
+        <div class="status-left">
+          <div class="status-item"><span class="status-dot"></span> Ready</div>
+          <div class="status-item">Split view · Edit on</div>
+          <div class="status-item">Claude: sonnet-4</div>
+        </div>
+        <div class="progress-wrap">
+          <span class="progress-label">Last converted 2m ago</span>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

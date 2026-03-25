@@ -1,0 +1,301 @@
+/* Host element must be a flex child that fills the workspace */
+:host {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-topbar {
+  height: 42px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  flex-shrink: 0;
+  background: var(--surface);
+}
+
+.tab-group {
+  display: flex;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+
+  button {
+    padding: 4px 12px;
+    font-size: 11px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.1s;
+
+    &.active {
+      background: var(--bg);
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    &:hover:not(.active) {
+      background: color-mix(in srgb, var(--border) 50%, transparent);
+    }
+  }
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.switch-track {
+  width: 28px;
+  height: 15px;
+  background: var(--border);
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &.on {
+    background: var(--accent-blue);
+
+    .switch-knob {
+      right: 1.5px;
+      left: auto;
+    }
+  }
+}
+
+.switch-knob {
+  position: absolute;
+  left: 1.5px;
+  top: 1.5px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  transition: left 0.2s, right 0.2s;
+}
+
+.char-count {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── Editor body ── */
+.editor-body {
+  flex: 1;
+  min-height: 0;
+  /* allow flex child to shrink in column parent */
+  display: flex;
+  overflow: hidden;
+  --split: 0.5;
+
+  &.dragging {
+    cursor: col-resize;
+    user-select: none;
+  }
+
+  /* In split mode: size panes from --split variable */
+  &.split {
+    .code-pane:not(.hidden) {
+      flex: none;
+      width: calc(var(--split) * 100%);
+    }
+
+    .preview-pane:not(.hidden) {
+      flex: none;
+      width: calc((1 - var(--split)) * 100%);
+    }
+  }
+}
+
+.code-pane {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  /* explicit height so cm-editor's height:100% resolves */
+  overflow: hidden;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.preview-pane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 32px;
+  border-left: 0.5px solid var(--border);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+
+  &.hidden {
+    display: none;
+  }
+}
+
+/* ── Resize handle ── */
+.resize-handle {
+  width: 8px;
+  flex-shrink: 0;
+  background: transparent;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+
+  &:hover .resize-grip,
+  .editor-body.dragging & .resize-grip {
+    opacity: 1;
+    background: var(--accent);
+  }
+}
+
+.resize-grip {
+  width: 3px;
+  height: 36px;
+  background: var(--border);
+  border-radius: 2px;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  border-top: 0.5px solid var(--border);
+  padding: 5px 14px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-item {
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+
+  &.error {
+    background: #e05252;
+  }
+
+  &.converting {
+    background: var(--accent);
+  }
+}
+
+.status-right {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── Responsive: mobile (≤768px) ── */
+@media (max-width: 768px) {
+  .editor-topbar {
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .char-count {
+    display: none;
+  }
+
+  .status-item:nth-child(3) {
+    display: none;
+  }
+
+  // hide Claude model on mobile
+
+  .editor-body {
+    flex-direction: column;
+
+    &.dragging {
+      cursor: row-resize;
+    }
+
+    &.split {
+      .code-pane:not(.hidden) {
+        flex: none;
+        width: 100%;
+        height: calc(var(--split) * 100%);
+      }
+
+      .preview-pane:not(.hidden) {
+        flex: none;
+        width: 100%;
+        height: calc((1 - var(--split)) * 100%);
+      }
+    }
+  }
+
+  .resize-handle {
+    width: 100%;
+    height: 8px;
+    cursor: row-resize;
+    flex-direction: row;
+  }
+
+  .resize-grip {
+    width: 36px;
+    height: 3px;
+  }
+
+  .preview-pane {
+    border-left: none;
+    border-top: 0.5px solid var(--border);
+  }
+}
+
+/* ── Responsive: tablet (769px–1024px) ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .status-item:nth-child(3) {
+    display: none;
+  }
+}

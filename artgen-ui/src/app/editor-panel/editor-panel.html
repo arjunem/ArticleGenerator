@@ -1,0 +1,85 @@
+<div class="editor-panel">
+
+  <div class="editor-topbar">
+    <div class="tab-group">
+      <button
+        [class.active]="stateService.state().viewMode === 'editor'"
+        (click)="setViewMode('editor')">Editor</button>
+      <button
+        [class.active]="stateService.state().viewMode === 'preview'"
+        (click)="setViewMode('preview')">Preview</button>
+      <button
+        [class.active]="stateService.state().viewMode === 'split'"
+        (click)="setViewMode('split')">Split</button>
+    </div>
+
+    <div class="editor-actions">
+      <label class="edit-switch">
+        <span>Edit mode</span>
+        <div class="switch-track" [class.on]="stateService.state().editMode" (click)="toggleEditMode()">
+          <div class="switch-knob"></div>
+        </div>
+        <input type="checkbox" [checked]="stateService.state().editMode" hidden />
+      </label>
+      <span class="char-count">
+        {{ stateService.state().markdownContent.length | number }} chars
+      </span>
+    </div>
+  </div>
+
+  <div class="editor-body"
+       #editorBody
+       [class.split]="stateService.state().viewMode === 'split'"
+       [class.dragging]="isDragging">
+
+    <div
+      class="code-pane"
+      #editorHost
+      [class.hidden]="stateService.state().viewMode === 'preview'">
+    </div>
+
+    @if (stateService.state().viewMode === 'split') {
+      <div class="resize-handle"
+           (mousedown)="startDrag($event)"
+           (touchstart)="startDrag($event)">
+        <div class="resize-grip"></div>
+      </div>
+    }
+
+    <div
+      class="preview-pane"
+      #previewHost
+      [class.hidden]="stateService.state().viewMode === 'editor'">
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-left">
+      <div class="status-item">
+        <span class="status-dot"
+          [class.error]="stateService.state().status === 'error'"
+          [class.converting]="stateService.state().status === 'converting'">
+        </span>
+        @switch (stateService.state().status) {
+          @case ('converting') { Converting… }
+          @case ('success') { Converted }
+          @case ('error') { Error }
+          @default { Ready }
+        }
+      </div>
+      <div class="status-item">
+        {{ stateService.state().viewMode | titlecase }} view
+        @if (stateService.state().editMode) { · Edit on }
+      </div>
+      @if (stateService.state().engine === 'llm') {
+        <div class="status-item">Claude: {{ stateService.state().llmModel }}</div>
+      }
+    </div>
+    @if (stateService.state().markdownFileName) {
+      <div class="status-right">
+        {{ stateService.state().markdownContent.trim().split(/\s+/).filter(w => w.length > 0).length }} words
+      </div>
+    }
+  </div>
+
+</div>

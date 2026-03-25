@@ -1,0 +1,310 @@
+:root {
+  --bg: #fdfcf9;
+  --surface: #f4f1ec;
+  --border: #e2ddd6;
+  --text: #1a1a2e;
+  --muted: #555570;
+  --accent: #e8673a;
+  --accent-blue: #2e6fd9;
+  --radius: 8px;
+  --sidebar-width: 230px;
+}
+
+/* System default */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a2e;
+    --surface: #222238;
+    --border: #333355;
+    --text: #e8e8f0;
+    --muted: #9090b0;
+  }
+}
+
+/* Explicit overrides */
+[data-theme="dark"] {
+  --bg: #1a1a2e;
+  --surface: #222238;
+  --border: #333355;
+  --text: #e8e8f0;
+  --muted: #9090b0;
+}
+
+[data-theme="light"] {
+  --bg: #fdfcf9;
+  --surface: #f4f1ec;
+  --border: #e2ddd6;
+  --text: #1a1a2e;
+  --muted: #555570;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ── CodeMirror theme — driven by CSS variables so it auto-switches with data-theme ── */
+.cm-editor {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+.cm-editor.cm-focused {
+  outline: none !important;
+}
+
+/* Gutter (line numbers bar) */
+.cm-gutters {
+  background: var(--surface) !important;
+  border-right: 1px solid var(--border) !important;
+  color: var(--muted) !important;
+}
+
+.cm-activeLineGutter {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+/* Active line highlight */
+.cm-activeLine {
+  background: color-mix(in srgb, var(--accent) 5%, transparent) !important;
+}
+
+/* Cursor */
+.cm-cursor,
+.cm-dropCursor {
+  border-left-color: var(--text) !important;
+}
+
+/* Selection */
+.cm-selectionBackground,
+.cm-focused .cm-selectionBackground {
+  background: color-mix(in srgb, var(--accent-blue) 25%, transparent) !important;
+}
+
+.cm-selectionMatch {
+  background: color-mix(in srgb, var(--accent-blue) 15%, transparent) !important;
+}
+
+/* Search match highlight */
+.cm-searchMatch {
+  background: color-mix(in srgb, #f6c90e 30%, transparent) !important;
+  outline: 1px solid #f6c90e !important;
+}
+
+/* Scrollbar — webkit */
+.cm-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+.cm-scroller::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Fold gutter */
+.cm-foldGutter span {
+  color: var(--muted) !important;
+}
+
+.cm-foldGutter span:hover {
+  color: var(--text) !important;
+}
+
+/* Tooltip / autocomplete panel */
+.cm-tooltip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+.cm-tooltip-autocomplete>ul>li[aria-selected] {
+  background: color-mix(in srgb, var(--accent-blue) 20%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+
+
+/* ── GitHub-style prose for .preview-pane (global – bypasses Angular encapsulation) ── */
+.preview-pane {
+
+  /* Code blocks — GitHub dark style regardless of app theme */
+  pre {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 6px !important;
+    margin: 16px 0 !important;
+    overflow: hidden !important;
+
+    code {
+      display: block;
+      overflow-x: auto;
+      padding: 16px !important;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+      font-size: 85% !important;
+      line-height: 1.45 !important;
+      background: transparent !important;
+      color: #e6edf3;
+      tab-size: 4;
+    }
+  }
+
+  /* Inline code — GitHub light style */
+  code:not(pre code) {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 85%;
+    padding: 0.2em 0.4em;
+    background: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    color: inherit;
+    border: none;
+  }
+
+  /* Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    line-height: 1.25;
+    margin-top: 24px;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  h1 {
+    font-size: 2em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.3em;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.3em;
+  }
+
+  h3 {
+    font-size: 1.25em;
+  }
+
+  h4 {
+    font-size: 1em;
+  }
+
+  h5 {
+    font-size: 0.875em;
+  }
+
+  h6 {
+    font-size: 0.85em;
+    color: var(--muted);
+  }
+
+  /* Paragraphs & lists */
+  p {
+    margin: 0 0 16px;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 16px;
+    padding-left: 2em;
+  }
+
+  li+li {
+    margin-top: 4px;
+  }
+
+  li>p {
+    margin-top: 16px;
+  }
+
+  /* Blockquote */
+  blockquote {
+    margin: 0 0 16px;
+    padding: 0 1em;
+    color: var(--muted);
+    border-left: 4px solid var(--border);
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0 0 16px;
+    display: block;
+    overflow-x: auto;
+  }
+
+  th,
+  td {
+    padding: 6px 13px;
+    border: 1px solid var(--border);
+  }
+
+  th {
+    font-weight: 600;
+    background: color-mix(in srgb, var(--border) 30%, transparent);
+  }
+
+  tr:nth-child(even) td {
+    background: color-mix(in srgb, var(--border) 15%, transparent);
+  }
+
+  /* Horizontal rule */
+  hr {
+    height: 4px;
+    padding: 0;
+    margin: 24px 0;
+    background-color: var(--border);
+    border: 0;
+    border-radius: 2px;
+  }
+
+  /* Images */
+  img {
+    max-width: 100%;
+    box-sizing: content-box;
+    border-radius: 4px;
+  }
+
+  /* Links */
+  a {
+    color: #58a6ff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Strong & emphasis */
+  strong {
+    font-weight: 600;
+  }
+}
