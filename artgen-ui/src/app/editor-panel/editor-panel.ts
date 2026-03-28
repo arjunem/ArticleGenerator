@@ -117,7 +117,7 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
       if (!s.markdownFileName && s.activeEditorTab === 'input') {
         this.stateService.setActiveEditorTab('generated');
       }
-      if (s.markdownFileName && s.activeEditorTab === 'generated' && !s.generatedContent) {
+      if (s.markdownFileName && s.activeEditorTab === 'generated' && !s.generatedContent && s.status !== 'converting') {
         this.stateService.setActiveEditorTab('input');
       }
     });
