@@ -82,3 +82,4 @@ $RECYCLE.BIN/
 *.bak
 coverage/
 .nyc_output/
+markflow_chat_panel_layout.html
