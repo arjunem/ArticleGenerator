@@ -1,10 +1,12 @@
 export type OutputFormat = 'html' | 'pdf';
 export type ConversionEngine = 'direct' | 'llm';
 export type ViewMode = 'editor' | 'preview' | 'split';
+export type EditorTab = 'input' | 'generated';
 
 export interface ConverterState {
   markdownContent: string;
   markdownFileName: string;
+  inputFile: File | null;       // original uploaded input file (null when content is typed)
   templateFile: File | null;
   engine: ConversionEngine;
   llmModel: string;
@@ -13,6 +15,10 @@ export interface ConverterState {
   editMode: boolean;
   status: 'idle' | 'converting' | 'success' | 'error';
   errorMessage: string | null;
+  // LLM generation state
+  generatedContent: string;
+  activeEditorTab: EditorTab;
+  generationProgress: number;   // 0–100
 }
 
 export interface ConversionResultItem {
@@ -26,8 +32,31 @@ export interface ConversionResponse {
   outputs: ConversionResultItem[];
 }
 
-export const LLM_MODELS = [
-  { label: 'Claude Sonnet 4.6', value: 'claude-sonnet-4-6' },
-  { label: 'Claude Opus 4.6',   value: 'claude-opus-4-6' },
-  { label: 'Claude Haiku 4.5',  value: 'claude-haiku-4-5-20251001' },
+export interface InputParseResponse {
+  markdown: string;
+  originalFilename: string;
+}
+
+export interface LlmModelInfo {
+  value: string;   // exact model name passed to the provider (e.g. "llama3.2:latest")
+  label: string;   // display name with :latest stripped (e.g. "llama3.2")
+}
+
+export interface LlmModelsResponse {
+  models: LlmModelInfo[];
+}
+
+export interface LlmSseEvent {
+  type: 'progress' | 'chunk' | 'done' | 'error';
+  text?: string;
+  value?: number;
+  message?: string;
+}
+
+// Models available in Ollama (user must have pulled these locally)
+export const OLLAMA_MODELS = [
+  { label: 'Llama 3.2',  value: 'llama3.2' },
+  { label: 'Mistral',    value: 'mistral' },
+  { label: 'Phi 4',      value: 'phi4' },
+  { label: 'Gemma 3',    value: 'gemma3' },
 ];

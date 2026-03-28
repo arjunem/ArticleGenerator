@@ -9,21 +9,29 @@ namespace ArtGen.Controllers;
 [Route("api/[controller]")]
 public class ConvertController(
     IConversionService directService,
+    IInputParserService inputParser,
     IMemoryCache cache,
     ILogger<ConvertController> logger) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Convert(
-        [FromForm] IFormFile markdownFile,
+        [FromForm] IFormFile inputFile,
         [FromForm] IFormFile? templateFile,
         [FromForm] string? outputFormats,
         CancellationToken ct)
     {
-        if (markdownFile is null || markdownFile.Length == 0)
-            return BadRequest("No markdown file provided.");
+        if (inputFile is null || inputFile.Length == 0)
+            return BadRequest("No input file provided.");
 
-        using var mdReader = new StreamReader(markdownFile.OpenReadStream());
-        var mdContent = await mdReader.ReadToEndAsync(ct);
+        string mdContent;
+        try
+        {
+            mdContent = await inputParser.ParseToMarkdownAsync(inputFile, ct);
+        }
+        catch (NotSupportedException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
 
         string? templateContent = null;
         string? templateFilename = null;

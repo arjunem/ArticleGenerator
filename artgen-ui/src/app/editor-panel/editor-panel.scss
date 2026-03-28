@@ -1,3 +1,61 @@
+/* ── LLM tab bar (Input / Generated) ── */
+.llm-tabs {
+  display: flex;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  padding: 0 14px;
+  gap: 2px;
+
+  button {
+    position: relative;
+    padding: 7px 14px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+
+    &.active {
+      color: var(--text);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    &:hover:not(.active) {
+      color: var(--text);
+    }
+  }
+}
+
+.tab-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+/* ── Generation progress bar ── */
+.generation-progress {
+  height: 3px;
+  background: color-mix(in srgb, var(--accent-blue) 20%, transparent);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent-blue);
+  transition: width 0.3s ease;
+  min-width: 4px;
+}
+
 /* Host element must be a flex child that fills the workspace */
 :host {
   flex: 1;

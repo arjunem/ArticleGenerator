@@ -8,7 +8,10 @@
         <span class="file-icon">📝</span>
         <div class="file-info">
           <div class="file-name">{{ state.state().markdownFileName }}</div>
-          <div class="file-meta">loaded</div>
+          <div class="file-meta">
+            <span class="file-type-badge">{{ fileTypeLabel(state.state().markdownFileName) }}</span>
+            loaded
+          </div>
         </div>
         <button class="x-btn" (click)="removeMd()">✕</button>
       </div>
@@ -19,8 +22,8 @@
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)">
         <div class="upload-icon">📄</div>
-        <div class="upload-text"><strong>Drop .md file</strong><br>or click to browse</div>
-        <input type="file" accept=".md" (change)="onMdFileChange($event)" hidden />
+        <div class="upload-text"><strong>Drop file or click to browse</strong><br>md · txt · html · json · docx · pdf</div>
+        <input type="file" accept=".md,.txt,.html,.htm,.json,.docx,.pdf" (change)="onMdFileChange($event)" hidden />
       </label>
     }
   </div>
@@ -44,8 +47,8 @@
       </div>
     } @else {
       <label class="tpl-zone">
-        <div class="tpl-text">Upload a CSS or HTML<br>template file</div>
-        <input type="file" accept=".html,.md,.pdf" (change)="onTemplateFileChange($event)" hidden />
+        <div class="tpl-text">HTML, Markdown or CSS<br>template file</div>
+        <input type="file" accept=".html,.md,.css" (change)="onTemplateFileChange($event)" hidden />
       </label>
     }
   </div>
@@ -57,7 +60,7 @@
     <div class="sec-label">Conversion engine</div>
     <div class="engine-box">
       <div class="engine-row">
-        <span class="engine-label">Claude LLM</span>
+        <span class="engine-label">Ollama LLM</span>
         <div class="toggle-wrap">
           <div
             class="toggle"
@@ -73,17 +76,24 @@
       <div class="sub-row">
         <span class="sub-label">Fallback: Direct</span>
         @if (state.state().engine === 'llm') {
-          <select class="select-mini" [value]="state.state().llmModel" (change)="onModelChange($event)">
-            @for (m of llmModels; track m.value) {
-              <option [value]="m.value">{{ m.label }}</option>
-            }
-          </select>
+          @if (modelsLoading()) {
+            <span class="models-loading">Loading…</span>
+          } @else if (modelsError()) {
+            <span class="models-error" title="Run: ollama serve">Ollama offline</span>
+            <button class="retry-btn" (click)="loadModels()">↺</button>
+          } @else {
+            <select class="select-mini" [value]="state.state().llmModel" (change)="onModelChange($event)">
+              @for (m of ollamaModels(); track m.value) {
+                <option [value]="m.value">{{ m.label }}</option>
+              }
+            </select>
+          }
         }
       </div>
     </div>
   </div>
 
-  <!-- Output format -->
+  <!-- Output format (always visible) -->
   <div class="section">
     <div class="sec-label">Output format</div>
     <div class="output-row">
@@ -106,22 +116,50 @@
     </div>
   </div>
 
-  <!-- Status -->
+  <!-- Status messages -->
   @if (state.state().status === 'error') {
     <div class="error-msg">{{ state.state().errorMessage }}</div>
   }
   @if (state.state().status === 'success') {
-    <div class="success-msg">Done — files downloaded.</div>
+    <div class="success-msg">
+      {{ state.state().engine === 'llm' ? 'Generation complete.' : 'Done — files downloaded.' }}
+    </div>
   }
 
-  <!-- Convert button -->
+  <!-- Generate / Convert button -->
   <button
     class="convert-btn"
     [class.converting]="state.state().status === 'converting'"
     [disabled]="!state.canConvert()"
     (click)="convert()">
     <svg viewBox="0 0 16 16" fill="white" width="13" height="13"><path d="M3 8l4-4v3h6v2H7v3L3 8z"/></svg>
-    {{ state.state().status === 'converting' ? 'Converting…' : 'Convert' }}
+    @if (state.state().status === 'converting') {
+      {{ state.state().engine === 'llm' ? 'Generating…' : 'Converting…' }}
+    } @else {
+      {{ state.state().engine === 'llm' ? 'Generate' : 'Convert' }}
+    }
   </button>
+
+  <!-- Cancel button (LLM generation only) -->
+  @if (state.state().engine === 'llm' && state.state().status === 'converting') {
+    <button class="cancel-btn" (click)="cancelGeneration()">Cancel</button>
+  }
+
+  <!-- Download generated content as HTML / PDF -->
+  @if (state.state().engine === 'llm' && state.state().generatedContent) {
+    <div class="download-section">
+      <div class="download-label">Download generated</div>
+      <button
+        class="convert-btn download-btn"
+        [disabled]="!canDownloadGenerated()"
+        [class.converting]="state.state().status === 'converting'"
+        (click)="downloadGenerated()">
+        <svg viewBox="0 0 16 16" fill="white" width="13" height="13">
+          <path d="M8 10.5l-4-4h2.5V2h3v4.5H12L8 10.5zM3 13h10v-1.5H3V13z"/>
+        </svg>
+        {{ state.state().status === 'converting' ? 'Converting…' : 'Download' }}
+      </button>
+    </div>
+  }
 
 </div>

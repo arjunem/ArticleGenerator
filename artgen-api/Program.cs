@@ -1,4 +1,5 @@
 using ArtGen.Services;
+using ArtGen.Services.Llm;
 using PuppeteerSharp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,14 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ChromiumState>();
 builder.Services.AddSingleton<IConversionService, DirectConversionService>();
+builder.Services.AddScoped<IInputParserService, InputParserService>();
+
+// LLM — provider abstraction
+// Add new providers here; the factory and service need no changes.
+builder.Services.AddHttpClient("ollama");
+builder.Services.AddSingleton<ILlmProvider, OllamaProvider>();
+builder.Services.AddSingleton<ILlmProviderFactory, LlmProviderFactory>();
+builder.Services.AddScoped<ILlmGenerationService, LlmGenerationService>();
 
 builder.Services.AddCors(opts => opts.AddPolicy("Frontend", p =>
     p.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()

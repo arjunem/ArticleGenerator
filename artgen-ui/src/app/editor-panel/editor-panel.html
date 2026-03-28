@@ -1,5 +1,33 @@
 <div class="editor-panel">
 
+  <!-- LLM tab bar: Input / Generated (only visible in LLM mode) -->
+  @if (stateService.state().engine === 'llm') {
+    <div class="llm-tabs">
+      <button
+        [class.active]="stateService.state().activeEditorTab === 'input'"
+        (click)="setActiveTab('input')">
+        Input
+      </button>
+      <button
+        [class.active]="stateService.state().activeEditorTab === 'generated'"
+        (click)="setActiveTab('generated')">
+        Generated
+        @if (stateService.state().generatedContent) {
+          <span class="tab-dot"></span>
+        }
+      </button>
+    </div>
+
+    <!-- Progress bar: visible while generating -->
+    @if (stateService.state().status === 'converting') {
+      <div class="generation-progress">
+        <div class="progress-fill"
+             [style.width.%]="stateService.state().generationProgress">
+        </div>
+      </div>
+    }
+  }
+
   <div class="editor-topbar">
     <div class="tab-group">
       <button
@@ -32,10 +60,22 @@
        [class.split]="stateService.state().viewMode === 'split'"
        [class.dragging]="isDragging">
 
+    <!-- Input editor: hidden in preview mode, or when Generated tab is active -->
     <div
       class="code-pane"
       #editorHost
-      [class.hidden]="stateService.state().viewMode === 'preview'">
+      [class.hidden]="stateService.state().viewMode === 'preview' ||
+                      (stateService.state().engine === 'llm' &&
+                       stateService.state().activeEditorTab === 'generated')">
+    </div>
+
+    <!-- Generated editor: always in DOM to preserve CodeMirror instance -->
+    <div
+      class="code-pane"
+      #generatedHost
+      [class.hidden]="stateService.state().viewMode === 'preview' ||
+                      stateService.state().engine !== 'llm' ||
+                      stateService.state().activeEditorTab === 'input'">
     </div>
 
     @if (stateService.state().viewMode === 'split') {
@@ -61,8 +101,12 @@
           [class.converting]="stateService.state().status === 'converting'">
         </span>
         @switch (stateService.state().status) {
-          @case ('converting') { Converting… }
-          @case ('success') { Converted }
+          @case ('converting') {
+            {{ stateService.state().engine === 'llm' ? 'Generating…' : 'Converting…' }}
+          }
+          @case ('success') {
+            {{ stateService.state().engine === 'llm' ? 'Generated' : 'Converted' }}
+          }
           @case ('error') { Error }
           @default { Ready }
         }
@@ -72,7 +116,7 @@
         @if (stateService.state().editMode) { · Edit on }
       </div>
       @if (stateService.state().engine === 'llm') {
-        <div class="status-item">Claude: {{ stateService.state().llmModel }}</div>
+        <div class="status-item">Ollama: {{ stateService.state().llmModel }}</div>
       }
     </div>
     @if (stateService.state().markdownFileName) {
