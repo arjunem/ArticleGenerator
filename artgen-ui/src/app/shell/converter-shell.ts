@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Sidebar } from '../sidebar/sidebar';
 import { EditorPanel } from '../editor-panel/editor-panel';
+import { ConverterStateService } from '../services/converter-state.service';
 
 @Component({
   selector: 'app-converter-shell',
@@ -204,6 +205,8 @@ export class ConverterShell {
   private readonly STORAGE_KEY = 'artgen-theme';
   isDark = signal(this.loadTheme());
 
+  private stateService = inject(ConverterStateService);
+
   private loadTheme(): boolean {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved) return saved === 'dark';
@@ -213,12 +216,15 @@ export class ConverterShell {
   toggleTheme(): void {
     const next = !this.isDark();
     this.isDark.set(next);
+    this.stateService.setIsDark(next);
     document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
     localStorage.setItem(this.STORAGE_KEY, next ? 'dark' : 'light');
   }
 
   constructor() {
-    document.documentElement.setAttribute('data-theme', this.isDark() ? 'dark' : 'light');
+    const dark = this.isDark();
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    this.stateService.setIsDark(dark);
   }
 
   toggleSidebar(): void {

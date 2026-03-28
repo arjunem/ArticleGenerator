@@ -36,10 +36,10 @@ export class Sidebar implements OnInit, OnDestroy {
 
   // ── File handling ────────────────────────────────────────────────────────────
 
-  async onMdFileChange(event: Event): Promise<void> {
+  onMdFileChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    await this.loadInputFile(file);
+    this.loadInputFile(file);
   }
 
   onTemplateFileChange(event: Event): void {
@@ -54,20 +54,19 @@ export class Sidebar implements OnInit, OnDestroy {
     this.state.setInputFile(null);
   }
 
-  async onDrop(event: DragEvent): Promise<void> {
+  onDrop(event: DragEvent): void {
     event.preventDefault();
     (event.currentTarget as HTMLElement).classList.remove('dragover');
     const file = event.dataTransfer?.files?.[0];
-    if (file) await this.loadInputFile(file);
+    if (file) this.loadInputFile(file);
   }
 
-  private readonly textExtensions = new Set(['.md', '.txt']);
+  private readonly textExtensions = new Set(['.md', '.txt', '.html', '.htm', '.json']);
 
-  private async loadInputFile(file: File): Promise<void> {
+  private loadInputFile(file: File): void {
     const ext = '.' + (file.name.split('.').pop()?.toLowerCase() ?? '');
 
     if (this.textExtensions.has(ext)) {
-      // Read locally — no round-trip needed for plain text/markdown
       const reader = new FileReader();
       reader.onload = () => {
         this.state.setMarkdown(reader.result as string, file.name);
@@ -75,16 +74,9 @@ export class Sidebar implements OnInit, OnDestroy {
       };
       reader.readAsText(file);
     } else {
-      // Send to backend to parse to markdown for the editor
-      this.state.setStatus('converting');
-      const result = await this.api.parseInputFile(file);
-      if (result) {
-        this.state.setMarkdown(result.markdown, file.name);
-        this.state.setInputFile(file);   // keep original for direct conversion
-        this.state.setStatus('idle');
-      } else {
-        this.state.setStatus('error', `Could not parse ${file.name}`);
-      }
+      // Binary format (docx, pdf) — store file for conversion, no preview content
+      this.state.setMarkdown('', file.name);
+      this.state.setInputFile(file);
     }
   }
 

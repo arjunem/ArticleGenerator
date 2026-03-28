@@ -22,6 +22,9 @@ export class ConverterStateService {
 
   state = this._state.asReadonly();
 
+  readonly isDark = signal(false);
+  setIsDark(v: boolean) { this.isDark.set(v); }
+
   canConvert = computed(() => {
     const s = this._state();
     const notBusy = s.status !== 'converting';

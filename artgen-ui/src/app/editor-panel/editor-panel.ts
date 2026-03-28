@@ -107,8 +107,19 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
       const content = (s.engine === 'llm' && s.activeEditorTab === 'generated')
         ? s.generatedContent
         : s.markdownContent;
-      if (this.previewHost?.nativeElement) {
-        this.previewHost.nativeElement.innerHTML = marked.parse(content) as string;
+      const ext = s.markdownFileName?.split('.').pop()?.toLowerCase();
+      const isHtml = (ext === 'html' || ext === 'htm') && s.activeEditorTab !== 'generated';
+      const isDark = this.stateService.isDark();
+      const host = this.previewHost?.nativeElement;
+      if (!host) return;
+      if (isHtml) {
+        host.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:100%;height:100%;border:none;';
+        iframe.srcdoc = this.applyThemeToHtml(content, isDark);
+        host.appendChild(iframe);
+      } else {
+        host.innerHTML = marked.parse(content) as string;
       }
     });
 
@@ -146,6 +157,23 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
       const ext = s.markdownFileName?.split('.').pop()?.toLowerCase() ?? '';
       this.selectedFormat.set(this.ACCEPTED_FORMATS.includes(ext) ? ext : 'md');
     });
+  }
+
+  /**
+   * Strips or keeps @media (prefers-color-scheme: dark/light) blocks so the
+   * iframe preview matches the app's current theme rather than the OS setting.
+   */
+  private applyThemeToHtml(html: string, isDark: boolean): string {
+    const removeScheme = isDark ? 'light' : 'dark';
+    // Matches @media (...prefers-color-scheme: <scheme>...) { ... }
+    // Handles one level of nested braces (covers :root { ... } inside the block).
+    return html.replace(
+      new RegExp(
+        String.raw`@media\s*\([^)]*prefers-color-scheme\s*:\s*${removeScheme}[^)]*\)\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}`,
+        'gi'
+      ),
+      ''
+    );
   }
 
   private applyRatio(ratio: number): void {
