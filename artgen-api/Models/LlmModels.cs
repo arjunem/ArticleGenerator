@@ -44,6 +44,16 @@ internal record OllamaTagModel(string Name);
 ///   done      – generation complete
 ///   error     – unrecoverable failure (message field)
 /// </summary>
+/// <summary>
+/// Request body for POST /api/llm/chat
+/// </summary>
+public record LlmChatRequest(
+    string UserMessage,
+    string Context,   // document content for AI context
+    string Model,
+    string Provider
+);
+
 public record LlmSseEvent(
     string Type,
     string? Text = null,

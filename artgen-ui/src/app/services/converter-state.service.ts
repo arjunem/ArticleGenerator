@@ -24,11 +24,13 @@ export class ConverterStateService {
 
   canConvert = computed(() => {
     const s = this._state();
-    const hasContent = s.markdownContent.length > 0;
     const notBusy = s.status !== 'converting';
-    // LLM mode only needs content; Direct mode also needs output formats
-    const formatsOk = s.engine === 'llm' || s.outputFormats.length > 0;
-    return hasContent && notBusy && formatsOk;
+    if (s.engine === 'llm') {
+      // Generate requires an uploaded input file (markdownFileName set)
+      return !!s.markdownFileName && notBusy;
+    }
+    // Direct: needs content in the editor and at least one output format
+    return s.markdownContent.length > 0 && notBusy && s.outputFormats.length > 0;
   });
 
   setMarkdown(content: string, filename: string) {

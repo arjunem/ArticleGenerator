@@ -3,11 +3,13 @@
   <!-- LLM tab bar: Input / Generated (only visible in LLM mode) -->
   @if (stateService.state().engine === 'llm') {
     <div class="llm-tabs">
-      <button
-        [class.active]="stateService.state().activeEditorTab === 'input'"
-        (click)="setActiveTab('input')">
-        Input
-      </button>
+      @if (stateService.state().markdownFileName) {
+        <button
+          [class.active]="stateService.state().activeEditorTab === 'input'"
+          (click)="setActiveTab('input')">
+          Input
+        </button>
+      }
       <button
         [class.active]="stateService.state().activeEditorTab === 'generated'"
         (click)="setActiveTab('generated')">
@@ -52,6 +54,13 @@
       <span class="char-count">
         {{ stateService.state().markdownContent.length | number }} chars
       </span>
+      <button class="chat-toggle-btn" [class.active]="chatVisible()" (click)="toggleChat()" title="Toggle chat panel">
+        <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
+          <path d="M14 2H2a1 1 0 00-1 1v8a1 1 0 001 1h3l3 3 3-3h3a1 1 0 001-1V3a1 1 0 00-1-1z"
+                stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        <span>Chat</span>
+      </button>
     </div>
   </div>
 
@@ -75,7 +84,7 @@
       #generatedHost
       [class.hidden]="stateService.state().viewMode === 'preview' ||
                       stateService.state().engine !== 'llm' ||
-                      stateService.state().activeEditorTab === 'input'">
+                      (stateService.state().activeEditorTab === 'input' && !!stateService.state().markdownFileName)">
     </div>
 
     @if (stateService.state().viewMode === 'split') {
@@ -92,6 +101,10 @@
       [class.hidden]="stateService.state().viewMode === 'editor'">
     </div>
   </div>
+
+  @if (chatVisible()) {
+    <app-chat-panel />
+  }
 
   <div class="status-bar">
     <div class="status-left">

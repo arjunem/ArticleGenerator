@@ -1,0 +1,111 @@
+<div class="chat-panel" [style.height.px]="panelHeight()" [class.dragging]="isDragging">
+
+  <!-- Drag handle -->
+  <div class="chat-drag" (mousedown)="startDrag($event)">
+    <div class="drag-grip"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="chat-header">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0">
+      <path d="M14 2H2a1 1 0 00-1 1v8a1 1 0 001 1h3l3 3 3-3h3a1 1 0 001-1V3a1 1 0 00-1-1z"
+            stroke="currentColor" stroke-width="1.2"/>
+    </svg>
+    <span class="chat-title">Content chat</span>
+    <span class="ctx-badge">Context: {{ contextLabel() }}</span>
+    <span class="ctx-badge-warn">{{ lineCount() }} lines in scope</span>
+    <button class="clear-btn" (click)="clearMessages()">Clear</button>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" #messagesEl>
+    @if (hasContext() && messages().length === 0) {
+      <div class="msg">
+        <div class="avatar ai">AI</div>
+        <div class="bubble-wrap ai">
+          <div class="bubble ai">Hi! I have the document in context. Ask me to rewrite sections, adjust tone, add examples, or restructure anything.</div>
+        </div>
+      </div>
+    }
+    @for (msg of messages(); track $index) {
+      <div class="msg" [class.user]="msg.role === 'user'">
+        <div class="avatar" [class.ai]="msg.role === 'ai'" [class.user]="msg.role === 'user'">
+          {{ msg.role === 'ai' ? 'AI' : 'U' }}
+        </div>
+          <div class="bubble-wrap" [class.ai]="msg.role === 'ai'">
+          <div class="bubble" [class.ai]="msg.role === 'ai'" [class.user]="msg.role === 'user'">
+            {{ msg.text }}
+            @if (msg.streaming) {
+              <span class="typing-dot"></span>
+            }
+          </div>
+          @if (msg.role === 'ai' && !msg.streaming && msg.text) {
+            <button class="copy-btn"
+                    [class.copied]="copiedIndex() === $index"
+                    (click)="copyMessage(msg.text, $index)"
+                    title="Copy">
+              @if (copiedIndex() === $index) {
+                <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor">
+                  <path d="M13.5 3.5L6 11 2.5 7.5l-1 1L6 13l8.5-8.5-1-1z"/>
+                </svg>
+              } @else {
+                <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor">
+                  <path d="M10 1H3a1 1 0 00-1 1v9h1V2h7V1zm2 2H6a1 1 0 00-1 1v10a1 1 0 001 1h6a1 1 0 001-1V4a1 1 0 00-1-1zm0 11H6V4h6v10z"/>
+                </svg>
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Suggestion chips -->
+  @if (!streaming()) {
+    <div class="suggestion-row">
+      @for (sug of suggestions; track sug) {
+        <button class="sug" (click)="useSuggestion(sug)">{{ sug }}</button>
+      }
+    </div>
+  }
+
+  <!-- Input row -->
+  <div class="chat-input-row">
+    <div class="ctx-indicator">
+      <span class="ctx-dot"></span>
+      <span>{{ scope() === 'full' ? 'Full doc' : 'Selection' }}</span>
+    </div>
+
+    <div class="chat-input-wrap">
+      <textarea
+        #textareaEl
+        class="chat-textarea"
+        rows="1"
+        placeholder="Ask about the content, request edits, or add sections…"
+        [(ngModel)]="inputText"
+        (keydown)="onTextareaKeydown($event)"
+        (input)="onTextareaInput(textareaEl)"
+        [disabled]="streaming()">
+      </textarea>
+      <div class="input-actions">
+        <button class="scope-btn" [class.active]="scope() === 'full'" (click)="setScope('full')">Full doc</button>
+        <button class="scope-btn" [class.active]="scope() === 'selection'" (click)="setScope('selection')">Selection</button>
+      </div>
+    </div>
+
+    @if (streaming()) {
+      <button class="stop-btn" (click)="cancelStreaming()" title="Stop">
+        <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor">
+          <rect x="3" y="3" width="10" height="10" rx="1"/>
+        </svg>
+      </button>
+    } @else {
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!inputText.trim()">
+        <svg viewBox="0 0 16 16" width="11" height="11" fill="white">
+          <path d="M15 8L1 1l3 7-3 7 14-7z"/>
+        </svg>
+      </button>
+    }
+  </div>
+
+</div>

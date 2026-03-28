@@ -53,6 +53,18 @@ export interface LlmSseEvent {
   message?: string;
 }
 
+// ── Chat panel ──────────────────────────────────────────────────────────────
+
+export type ChatScope = 'full' | 'selection';
+
+export interface ChatMessage {
+  role: 'ai' | 'user';
+  text: string;
+  streaming?: boolean;
+}
+
+// ── Ollama fallback list ─────────────────────────────────────────────────────
+
 // Models available in Ollama (user must have pulled these locally)
 export const OLLAMA_MODELS = [
   { label: 'Llama 3.2',  value: 'llama3.2' },

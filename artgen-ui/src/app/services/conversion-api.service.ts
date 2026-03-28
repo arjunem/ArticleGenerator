@@ -197,6 +197,72 @@ export class ConversionApiService {
     }
   }
 
+  // ── LLM chat (SSE streaming) ─────────────────────────────────────────────────
+
+  async chatWithLlm(
+    userMessage: string,
+    context: string,
+    model: string,
+    provider: string,
+    onChunk: (text: string) => void,
+    onDone: () => void,
+    onError: (message: string) => void,
+    signal: AbortSignal
+  ): Promise<void> {
+    let response: Response;
+    try {
+      response = await fetch(`${environment.apiUrl}/api/llm/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userMessage, context, model, provider }),
+        signal,
+      });
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      onError(err?.message ?? 'Failed to connect to chat service');
+      return;
+    }
+
+    if (!response.ok) {
+      onError(`Server error ${response.status}: ${response.statusText}`);
+      return;
+    }
+
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() ?? '';
+
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith('data: ')) continue;
+          const json = line.slice('data: '.length);
+          let evt: LlmSseEvent;
+          try { evt = JSON.parse(json); } catch { continue; }
+
+          switch (evt.type) {
+            case 'chunk': if (evt.text) onChunk(evt.text); break;
+            case 'done':  onDone(); return;
+            case 'error': onError(evt.message ?? 'Chat failed'); return;
+          }
+        }
+      }
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      onError(err?.message ?? 'Stream interrupted');
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
   // ── Download helper ──────────────────────────────────────────────────────────
 
   private async triggerDownload(token: string, filename: string, mdBase: string): Promise<void> {

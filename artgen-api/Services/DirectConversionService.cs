@@ -49,9 +49,15 @@ public class DirectConversionService(ChromiumState chromiumState) : IConversionS
                     css = request.TemplateContent;
                     break;
                 case ".html":
-                    return request.TemplateContent.Replace("{{{content}}}", bodyHtml);
+                    // Prefer explicit {{{content}}} placeholder; otherwise inject before </body>
+                    if (request.TemplateContent.Contains("{{{content}}}"))
+                        return request.TemplateContent.Replace("{{{content}}}", bodyHtml);
+                    var insertAt = request.TemplateContent.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+                    return insertAt >= 0
+                        ? request.TemplateContent.Insert(insertAt, bodyHtml)
+                        : request.TemplateContent + bodyHtml;
                 case ".md":
-                    customBody = Markdown.ToHtml(request.TemplateContent, Pipeline) + bodyHtml;
+                    customBody = bodyHtml;   // template was already used as LLM context — don't prepend it again
                     break;
             }
         }

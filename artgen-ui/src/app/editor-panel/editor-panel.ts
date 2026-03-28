@@ -11,6 +11,7 @@ import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
 import { ConverterStateService } from '../services/converter-state.service';
 import { EditorTab, ViewMode } from '../models/converter.models';
+import { ChatPanel } from '../chat-panel/chat-panel';
 
 // Configure marked with syntax highlighting once at module level
 marked.use(markedHighlight({
@@ -24,7 +25,7 @@ marked.use(markedHighlight({
 @Component({
   selector: 'app-editor-panel',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, TitleCasePipe],
+  imports: [CommonModule, DecimalPipe, TitleCasePipe, ChatPanel],
   templateUrl: './editor-panel.html',
   styleUrl: './editor-panel.scss'
 })
@@ -46,6 +47,7 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
 
   readonly splitRatio = signal(0.5);
   isDragging = false;
+  chatVisible = signal(false);
 
   // Scroll-sync state
   private isSyncing = false;
@@ -104,6 +106,19 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
         : s.markdownContent;
       if (this.previewHost?.nativeElement) {
         this.previewHost.nativeElement.innerHTML = marked.parse(content) as string;
+      }
+    });
+
+    // In LLM mode: auto-switch to Generated tab when input content is cleared,
+    // and back to Input when a file is loaded.
+    effect(() => {
+      const s = this.stateService.state();
+      if (s.engine !== 'llm') return;
+      if (!s.markdownFileName && s.activeEditorTab === 'input') {
+        this.stateService.setActiveEditorTab('generated');
+      }
+      if (s.markdownFileName && s.activeEditorTab === 'generated' && !s.generatedContent) {
+        this.stateService.setActiveEditorTab('input');
       }
     });
 
@@ -209,6 +224,8 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
   }
 
   setViewMode(mode: ViewMode): void { this.stateService.setViewMode(mode); }
+
+  toggleChat(): void { this.chatVisible.update(v => !v); }
 
   setActiveTab(tab: EditorTab): void { this.stateService.setActiveEditorTab(tab); }
 

@@ -10,6 +10,7 @@ namespace ArtGen.Controllers;
 [Route("api/[controller]")]
 public class LlmController(
     ILlmGenerationService generationService,
+    ILlmProviderFactory providerFactory,
     IHttpClientFactory httpClientFactory,
     IConfiguration config,
     ILogger<LlmController> logger) : ControllerBase
@@ -103,6 +104,63 @@ public class LlmController(
             }
             catch { /* response may already be gone */ }
         }
+    }
+
+    /// <summary>
+    /// POST /api/llm/chat
+    ///
+    /// Accepts a user message + document context and streams SSE responses.
+    /// Uses the same event format as /api/llm/generate.
+    /// </summary>
+    [HttpPost("chat")]
+    public async Task Chat([FromBody] LlmChatRequest request, CancellationToken ct)
+    {
+        Response.Headers.ContentType  = "text/event-stream";
+        Response.Headers.CacheControl = "no-cache";
+        Response.Headers.Connection   = "keep-alive";
+
+        try
+        {
+            var provider = providerFactory.Get(request.Provider);
+            var systemPrompt = BuildChatSystemPrompt(request.Context);
+            var llmRequest = new LlmProviderRequest(systemPrompt, request.UserMessage, request.Model);
+
+            await foreach (var token in provider.StreamAsync(llmRequest, ct))
+            {
+                await WriteSseEventAsync(new LlmSseEvent("chunk", Text: token), ct);
+            }
+
+            await WriteSseEventAsync(new LlmSseEvent("done"), ct);
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected — not an error
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "LLM chat failed for provider={Provider} model={Model}", request.Provider, request.Model);
+            try
+            {
+                await WriteSseEventAsync(new LlmSseEvent("error", Message: ex.Message), ct);
+            }
+            catch { /* response may already be gone */ }
+        }
+    }
+
+    private static string BuildChatSystemPrompt(string? context)
+    {
+        if (string.IsNullOrWhiteSpace(context))
+            return "You are an AI assistant helping the user with their document. Format your responses as Markdown.";
+
+        return $"""
+            You are an AI assistant helping the user edit and improve their document.
+            Here is the document content for context:
+
+            {context}
+
+            Help the user with their specific request. Provide concrete, actionable suggestions
+            or make the requested edits directly. Format your response as Markdown.
+            """;
     }
 
     private async Task WriteSseEventAsync(LlmSseEvent evt, CancellationToken ct)
