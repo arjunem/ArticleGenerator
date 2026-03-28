@@ -44,6 +44,14 @@
     </div>
 
     <div class="editor-actions">
+      <select class="format-select"
+              [value]="selectedFormat()"
+              (change)="selectedFormat.set($any($event.target).value)"
+              title="Input format">
+        @for (fmt of ACCEPTED_FORMATS; track fmt) {
+          <option [value]="fmt">{{ fmt }}</option>
+        }
+      </select>
       <label class="edit-switch">
         <span>Edit mode</span>
         <div class="switch-track" [class.on]="stateService.state().editMode" (click)="toggleEditMode()">

@@ -49,6 +49,9 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
   isDragging = false;
   chatVisible = signal(false);
 
+  readonly ACCEPTED_FORMATS = ['md', 'txt', 'html', 'json', 'docx', 'pdf'];
+  readonly selectedFormat = signal('md');
+
   // Scroll-sync state
   private isSyncing = false;
   private editorScrollListener?: () => void;
@@ -132,6 +135,17 @@ export class EditorPanel implements AfterViewInit, OnDestroy {
     });
 
     effect(() => { this.applyRatio(this.splitRatio()); });
+
+    // Auto-select format based on the active tab and opened file
+    effect(() => {
+      const s = this.stateService.state();
+      if (s.engine === 'llm' && s.activeEditorTab === 'generated') {
+        this.selectedFormat.set('md');
+        return;
+      }
+      const ext = s.markdownFileName?.split('.').pop()?.toLowerCase() ?? '';
+      this.selectedFormat.set(this.ACCEPTED_FORMATS.includes(ext) ? ext : 'md');
+    });
   }
 
   private applyRatio(ratio: number): void {

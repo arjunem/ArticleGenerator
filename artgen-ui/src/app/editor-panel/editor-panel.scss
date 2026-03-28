@@ -274,6 +274,29 @@
   transition: opacity 0.15s, background 0.15s;
 }
 
+/* ── Format select ── */
+.format-select {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 10px;
+  padding: 2px 6px;
+  cursor: pointer;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  height: 22px;
+
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  option {
+    text-transform: uppercase;
+  }
+}
+
 /* ── Status bar ── */
 .status-bar {
   border-top: 0.5px solid var(--border);
