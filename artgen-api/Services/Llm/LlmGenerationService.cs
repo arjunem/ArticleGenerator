@@ -31,8 +31,8 @@ public class LlmGenerationService(ILlmProviderFactory providerFactory) : ILlmGen
         yield return new LlmSseEvent("progress", Value: 10);
 
         var provider = providerFactory.Get(request.Provider);
-        var systemPrompt = BuildSystemPrompt(request.TemplateContent, request.TemplateFilename);
-        var providerRequest = new LlmProviderRequest(systemPrompt, request.MarkdownContent, request.Model);
+        var systemPrompt = BuildSystemPrompt(request.InputFormat, request.TemplateContent, request.TemplateFilename);
+        var providerRequest = new LlmProviderRequest(systemPrompt, request.InputContent, request.Model);
 
         // Signal: about to start streaming
         yield return new LlmSseEvent("progress", Value: 15);
@@ -60,13 +60,20 @@ public class LlmGenerationService(ILlmProviderFactory providerFactory) : ILlmGen
     // remain unaware of the template concept.
     // -------------------------------------------------------------------------
 
-    private static string BuildSystemPrompt(string? templateContent, string? templateFilename)
+    private static string BuildSystemPrompt(string inputFormat, string? templateContent, string? templateFilename)
     {
-        const string Base =
-            "You are a technical writer. " +
-            "Generate a well-structured, complete article in Markdown format " +
-            "based on the notes or outline provided by the user. " +
-            "Use clear headings, concise paragraphs, and code blocks where appropriate.";
+        var contentHint = inputFormat == "plain"
+            ? "based on the plain text notes or content provided by the user."
+            : "based on the Markdown notes or outline provided by the user.";
+
+        var Base =
+        "You are an expert technical writer. Using the content provided below as your "+
+        "source material, write a detailed, polished, publication-ready technical article. "+ 
+        "Use simple language with analogies, clear H2/H3 headings, short paragraphs, "+
+        "code snippets with explanations, blockquotes for key insights, and 💡 Pro Tip "+
+        "callouts where relevant. Preserve all technical accuracy, expand on brief points, "+ 
+        "and output clean Markdown directly without any preamble. "+
+        $"{contentHint} ";
 
         if (string.IsNullOrWhiteSpace(templateContent))
             return Base;

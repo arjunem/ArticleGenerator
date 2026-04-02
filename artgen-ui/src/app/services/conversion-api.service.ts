@@ -122,7 +122,8 @@ export class ConversionApiService {
    * The caller manages AbortController for cancellation.
    */
   async generateWithLlm(
-    markdownContent: string,
+    inputContent: string,
+    inputFormat: string,
     templateContent: string | null,
     templateFilename: string | null,
     model: string,
@@ -134,7 +135,8 @@ export class ConversionApiService {
     signal: AbortSignal
   ): Promise<void> {
     const form = new FormData();
-    form.append('markdownContent', markdownContent);
+    form.append('inputContent', inputContent);
+    form.append('inputFormat', inputFormat);
     if (templateContent) form.append('templateContent', templateContent);
     if (templateFilename) form.append('templateFilename', templateFilename);
     form.append('model', model);

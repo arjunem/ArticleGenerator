@@ -4,7 +4,8 @@ namespace ArtGen.Models;
 /// Incoming request from the frontend to generate content via LLM.
 /// </summary>
 public record LlmGenerationRequest(
-    string MarkdownContent,
+    string InputContent,
+    string InputFormat,         // "markdown" | "plain"
     string? TemplateContent,
     string? TemplateFilename,   // used to tailor the system prompt (.html / .md / .css)
     string Model,

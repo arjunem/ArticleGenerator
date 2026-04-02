@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ArtGen.Models;
+using ArtGen.Services;
 using ArtGen.Services.Llm;
 using Microsoft.AspNetCore.Mvc;
 
@@ -69,7 +70,8 @@ public class LlmController(
     /// </summary>
     [HttpPost("generate")]
     public async Task Generate(
-        [FromForm] string markdownContent,
+        [FromForm] string inputContent,
+        [FromForm] string inputFormat,
         [FromForm] string? templateContent,
         [FromForm] string? templateFilename,
         [FromForm] string model,
@@ -80,7 +82,15 @@ public class LlmController(
         Response.Headers.CacheControl = "no-cache";
         Response.Headers.Connection   = "keep-alive";
 
-        var request = new LlmGenerationRequest(markdownContent, templateContent, templateFilename, model, provider);
+        // HTML content arrives as raw markup when loaded directly from the editor.
+        // Convert to Markdown before sending to the LLM.
+        if (inputFormat == "html")
+        {
+            inputContent = InputParserService.ParseHtmlString(inputContent);
+            inputFormat  = "markdown";
+        }
+
+        var request = new LlmGenerationRequest(inputContent, inputFormat, templateContent, templateFilename, model, provider);
 
         try
         {

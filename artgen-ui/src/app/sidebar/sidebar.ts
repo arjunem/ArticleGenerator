@@ -150,7 +150,19 @@ export class Sidebar implements OnInit, OnDestroy {
     this.state.setGenerationProgress(5);
     this.state.setStatus('converting');
 
-    // Read template file content if present
+    // For binary files (PDF, DOCX) markdownContent is empty — parse via server first.
+    // For text files already loaded in the editor, use markdownContent directly.
+    const resolveInput = async (): Promise<{ content: string; format: string }> => {
+      if (!s.markdownContent && s.inputFile) {
+        const parsed = await this.api.parseInputFile(s.inputFile);
+        return {
+          content: parsed?.markdown ?? '',
+          format: this.inputFormat(s.inputFile.name)
+        };
+      }
+      return { content: s.markdownContent, format: this.inputFormat(s.markdownFileName) };
+    };
+
     const readTemplate = (): Promise<string | null> => {
       if (!s.templateFile) return Promise.resolve(null);
       return new Promise(resolve => {
@@ -161,11 +173,12 @@ export class Sidebar implements OnInit, OnDestroy {
       });
     };
 
-    readTemplate().then(templateContent => {
+    Promise.all([resolveInput(), readTemplate()]).then(([{ content, format }, templateContent]) => {
       let chunkCount = 0;
 
       this.api.generateWithLlm(
-        s.markdownContent,
+        content,
+        format,
         templateContent,
         s.templateFile?.name ?? null,
         s.llmModel,
@@ -197,6 +210,13 @@ export class Sidebar implements OnInit, OnDestroy {
         this.abortController!.signal
       );
     });
+  }
+
+  private inputFormat(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+    if (ext === 'pdf' || ext === 'txt') return 'plain';
+    if (ext === 'html' || ext === 'htm') return 'html';
+    return 'markdown';
   }
 
   downloadGenerated(): void { this.api.convertGenerated(); }

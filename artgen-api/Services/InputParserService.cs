@@ -59,6 +59,11 @@ public class InputParserService : IInputParserService
     private static async Task<string> ParseHtmlAsync(IFormFile file, CancellationToken ct)
     {
         var html = await ReadAsTextAsync(file, ct);
+        return ParseHtmlString(html);
+    }
+
+    public static string ParseHtmlString(string html)
+    {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 

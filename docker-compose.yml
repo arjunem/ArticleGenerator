@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: ./artgen-api
+      dockerfile: Dockerfile
+    ports:
+      - "5277:5277"
+    volumes:
+      - chromium-cache:/app/chromium-cache
+    environment:
+      # Chromium cache persisted via volume
+      - Conversion__ChromiumCachePath=/app/chromium-cache
+      # Allow requests proxied from the UI nginx container
+      - Cors__AllowedOrigins__0=http://localhost
+      # Point Ollama at the host machine (adjust if Ollama runs elsewhere)
+      - Llm__Ollama__BaseUrl=http://host.docker.internal:11434
+    # Allows host.docker.internal to resolve on Linux
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./artgen-ui
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  chromium-cache:
